@@ -45,9 +45,14 @@ read_env_value() {
 set_env_value() {
   local key="$1"
   local value="$2"
+  local tmp_file
+  tmp_file="$(mktemp)"
+
   if grep -q "^${key}=" .env; then
-    sed -i "s#^${key}=.*#${key}=${value}#" .env
+    awk -F'=' -v k="$key" -v v="$value" 'BEGIN{OFS="="} {if ($1==k) {$0=k OFS v} print}' .env > "$tmp_file"
+    mv "$tmp_file" .env
   else
+    rm -f "$tmp_file"
     printf '\n%s=%s\n' "$key" "$value" >> .env
   fi
 }
