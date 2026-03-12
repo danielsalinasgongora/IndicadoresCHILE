@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Indicadores Chile</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main>
+    <h1>Dashboard macroeconómico Chile</h1>
+    <p>Compara Chile, OCDE y Mundo; cruza series y agrega contexto de eventos.</p>
+
+    <section class="controls">
+      <label>Indicador
+        <select id="indicatorSelect">
+          <option value="inflation">Inflación anual</option>
+          <option value="gdp_growth">Crecimiento PIB real</option>
+        </select>
+      </label>
+      <label>Desde
+        <input id="startYear" type="number" value="2005" />
+      </label>
+      <label>Hasta
+        <input id="endYear" type="number" value="2024" />
+      </label>
+      <button id="loadBtn">Actualizar panel</button>
+    </section>
+
+    <section class="stats" id="statsCards"></section>
+
+    <section class="chart-card">
+      <h2>Comparación principal</h2>
+      <canvas id="mainChart" height="110"></canvas>
+    </section>
+
+    <section class="chart-card">
+      <h2>Riesgo país por gobierno</h2>
+      <canvas id="riskChart" height="90"></canvas>
+    </section>
+
+    <section class="sum-card">
+      <h2>Suma de 2 curvas</h2>
+      <div class="sum-controls">
+        <input id="leftCurve" value="inflation:CHL" />
+        <span>+</span>
+        <input id="rightCurve" value="gdp_growth:CHL" />
+        <button id="sumBtn">Calcular suma</button>
+      </div>
+      <pre id="sumResult"></pre>
+    </section>
+
+    <section class="grid-2">
+      <article>
+        <h2>Eventos relevantes por año</h2>
+        <ul id="eventsList"></ul>
+      </article>
+      <article>
+        <h2>Riesgo país vs Gobierno</h2>
+        <ul id="riskList"></ul>
+      </article>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
