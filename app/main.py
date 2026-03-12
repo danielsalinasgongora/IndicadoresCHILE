@@ -42,7 +42,9 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Indicadores Chile Dashboard API", version="1.1.0", lifespan=lifespan)
+root_path = os.getenv("ROOT_PATH", "")
+
+app = FastAPI(title="Indicadores Chile Dashboard API", version="1.1.0", lifespan=lifespan, root_path=root_path)
 
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000").split(",")
 app.add_middleware(

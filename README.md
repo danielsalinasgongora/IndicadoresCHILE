@@ -15,8 +15,8 @@ Proyecto web para analizar indicadores macroeconómicos de Chile con comparació
 - Endpoint administrativo protegido por API key para forzar refresh.
 - Testing automatizado + CI con GitHub Actions.
 
-## Instalación pública (rápida)
-Requisitos: Docker Engine + Docker Compose plugin.
+## Instalación pública (recomendada)
+Requisitos: Docker Engine + Docker Compose plugin (+ curl en el host).
 
 ```bash
 git clone <URL_DE_TU_REPO>
@@ -25,13 +25,18 @@ cd IndicadoresCHILE
 ```
 
 Esto hace automáticamente:
-- pre-check de Docker/Compose,
+- pre-check de Docker/Compose/curl,
 - creación de `.env` desde `.env.example`,
-- generación automática de `ADMIN_API_KEY` segura,
+- generación automática de `ADMIN_API_KEY` segura (sin depender de python del host),
 - build + `up -d`,
 - validación de salud del servicio.
 
-Abre: `http://IP_DEL_SERVIDOR:${APP_PORT}` (por defecto 8000).
+Abre: `http://IP_DEL_SERVIDOR:8000` (o puerto definido en `APP_PORT`).
+
+## Alternativa con Makefile (más simple)
+```bash
+make install-public
+```
 
 ## Instalación manual con Docker
 ```bash
@@ -44,17 +49,48 @@ cp .env.example .env
 ```bash
 # levantar/actualizar
 ./deployment/deploy.sh
+# o
+make deploy
 
 # logs en vivo
 docker compose logs -f dashboard
+# o
+make logs
 
 # estado
 docker compose ps
+# o
+make status
 
 # detener
 docker compose down
+# o
+make down
 ```
 
+
+## Despliegue detrás de proxy (Nginx Proxy Manager)
+Si expones la app públicamente detrás de Nginx Proxy Manager:
+
+1. Configura el proxy host apuntando al servidor/puerto donde corre Docker (`APP_PORT`, por defecto 8000).
+2. En `.env`, ajusta:
+```bash
+ALLOWED_ORIGINS=https://tu-dominio.com
+FORWARDED_ALLOW_IPS=*
+PROXY_HEADERS=1
+```
+3. Si publicas en subruta (ej: `https://tu-dominio.com/indicadores`), usa:
+```bash
+ROOT_PATH=/indicadores
+```
+4. Reaplica despliegue:
+```bash
+./deployment/deploy.sh
+```
+
+Notas:
+- `PROXY_HEADERS=1` habilita lectura de `X-Forwarded-*` en Uvicorn.
+- `FORWARDED_ALLOW_IPS` puede restringirse a la IP de tu proxy en lugar de `*` para mayor seguridad.
 
 ## Resolver conflictos de merge (rápido)
 Si tu PR marca conflictos con `main`, puedes usar:
@@ -77,7 +113,6 @@ El script hace `fetch + rebase` y te deja instrucciones para continuar en caso d
 - `POST /api/admin/refresh` (header `X-API-Key`)
 
 ## Ejecutar local sin Docker
-## Ejecutar local
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -88,14 +123,11 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 Abrir: `http://localhost:8000`
 
-## Ejecutar con Docker
-```bash
-docker compose up --build
-```
-
 ## Tests
 ```bash
 pytest -q
+# o
+make test
 ```
 
 ## Seguridad y acceso
@@ -105,11 +137,6 @@ pytest -q
 - Cabeceras de seguridad HTTP activas (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`).
 - Recomendado para producción:
   - Reverse proxy con TLS (Nginx/Traefik/Caddy).
-- CORS configurable por `ALLOWED_ORIGINS` (por defecto sólo localhost).
-- Endpoint admin protegido con `ADMIN_API_KEY`.
-- Cabeceras de seguridad HTTP activas (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`).
-- Recomendado para producción:
-  - Reverse proxy con TLS.
   - Rotación de `ADMIN_API_KEY` y gestión en Secret Manager.
   - Rate limiting/WAF en capa de borde.
 
@@ -120,27 +147,16 @@ pytest -q
 docker compose exec dashboard python scripts/update_data.py
 ```
 
+## Troubleshooting rápido
+- Verifica salud:
+```bash
+curl -sS http://127.0.0.1:8000/api/health
+```
+- Si no responde:
+```bash
+docker compose ps
+docker compose logs -f dashboard
+```
+
 ## CI/CD
 El workflow `.github/workflows/ci.yml` instala dependencias y ejecuta pruebas en cada push/PR.
-- Programar cron diario para refrescar series:
-```bash
-0 6 * * * cd /ruta/IndicadoresCHILE && /ruta/.venv/bin/python scripts/update_data.py
-```
-- También puedes forzar actualización con `POST /api/admin/refresh`.
-
-## CI/CD
-El workflow `.github/workflows/ci.yml` instala dependencias y ejecuta pruebas en cada push/PR.
-
-
-## Publicar en GitHub
-Si aún no tienes remoto configurado:
-```bash
-git remote add origin <URL_DEL_REPO>
-```
-
-Subir cambios:
-```bash
-git push -u origin <tu-rama>
-```
-
-Crear PR desde GitHub usando la rama subida.
