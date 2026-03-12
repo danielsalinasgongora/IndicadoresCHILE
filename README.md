@@ -77,6 +77,7 @@ El script hace `fetch + rebase` y te deja instrucciones para continuar en caso d
 - `POST /api/admin/refresh` (header `X-API-Key`)
 
 ## Ejecutar local sin Docker
+## Ejecutar local
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -86,6 +87,11 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Abrir: `http://localhost:8000`
+
+## Ejecutar con Docker
+```bash
+docker compose up --build
+```
 
 ## Tests
 ```bash
@@ -99,6 +105,11 @@ pytest -q
 - Cabeceras de seguridad HTTP activas (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`).
 - Recomendado para producción:
   - Reverse proxy con TLS (Nginx/Traefik/Caddy).
+- CORS configurable por `ALLOWED_ORIGINS` (por defecto sólo localhost).
+- Endpoint admin protegido con `ADMIN_API_KEY`.
+- Cabeceras de seguridad HTTP activas (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`).
+- Recomendado para producción:
+  - Reverse proxy con TLS.
   - Rotación de `ADMIN_API_KEY` y gestión en Secret Manager.
   - Rate limiting/WAF en capa de borde.
 
@@ -111,3 +122,25 @@ docker compose exec dashboard python scripts/update_data.py
 
 ## CI/CD
 El workflow `.github/workflows/ci.yml` instala dependencias y ejecuta pruebas en cada push/PR.
+- Programar cron diario para refrescar series:
+```bash
+0 6 * * * cd /ruta/IndicadoresCHILE && /ruta/.venv/bin/python scripts/update_data.py
+```
+- También puedes forzar actualización con `POST /api/admin/refresh`.
+
+## CI/CD
+El workflow `.github/workflows/ci.yml` instala dependencias y ejecuta pruebas en cada push/PR.
+
+
+## Publicar en GitHub
+Si aún no tienes remoto configurado:
+```bash
+git remote add origin <URL_DEL_REPO>
+```
+
+Subir cambios:
+```bash
+git push -u origin <tu-rama>
+```
+
+Crear PR desde GitHub usando la rama subida.
