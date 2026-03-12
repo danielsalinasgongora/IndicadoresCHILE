@@ -42,6 +42,73 @@ read_env_value() {
   fi
 }
 
+set_env_value() {
+  local key="$1"
+  local value="$2"
+  if grep -q "^${key}=" .env; then
+    sed -i "s#^${key}=.*#${key}=${value}#" .env
+  else
+    printf '\n%s=%s\n' "$key" "$value" >> .env
+  fi
+}
+
+is_port_in_use() {
+  local port="$1"
+
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltn | awk '{print $4}' | grep -Eq "(^|:)${port}$"
+    return
+  fi
+
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -iTCP -sTCP:LISTEN -P -n | awk '{print $9}' | grep -Eq "(^|:)${port}$"
+    return
+  fi
+
+  if command -v netstat >/dev/null 2>&1; then
+    netstat -ltn 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)${port}$"
+    return
+  fi
+
+  # fallback: if no checker available, assume free
+  return 1
+}
+
+choose_available_port() {
+  local current_port="$1"
+
+  if ! is_port_in_use "$current_port"; then
+    echo "$current_port"
+    return
+  fi
+
+  echo "[deploy] El puerto ${current_port} ya está en uso en el host."
+
+  if [ -t 0 ]; then
+    while true; do
+      read -r -p "[deploy] Ingresa otro puerto (ej: 8080): " new_port
+      if ! echo "$new_port" | grep -Eq '^[0-9]{2,5}$'; then
+        echo "[deploy] Puerto inválido."
+        continue
+      fi
+      if [ "$new_port" -lt 1 ] || [ "$new_port" -gt 65535 ]; then
+        echo "[deploy] Puerto fuera de rango (1-65535)."
+        continue
+      fi
+      if is_port_in_use "$new_port"; then
+        echo "[deploy] El puerto ${new_port} también está ocupado."
+        continue
+      fi
+      echo "$new_port"
+      return
+    done
+  fi
+
+  echo "[deploy] Entorno no interactivo y puerto ocupado."
+  echo "[deploy] Define APP_PORT manualmente en .env y reintenta."
+  exit 1
+}
+
 generate_admin_key_if_needed() {
   local current_key
   current_key="$(read_env_value "ADMIN_API_KEY" "")"
@@ -49,11 +116,7 @@ generate_admin_key_if_needed() {
   if [ -z "$current_key" ] || [ "$current_key" = "change-this-in-production" ]; then
     local new_key
     new_key="$(generate_secure_key)"
-    if grep -q '^ADMIN_API_KEY=' .env; then
-      sed -i "s#^ADMIN_API_KEY=.*#ADMIN_API_KEY=${new_key}#" .env
-    else
-      printf '\nADMIN_API_KEY=%s\n' "$new_key" >> .env
-    fi
+    set_env_value "ADMIN_API_KEY" "$new_key"
     echo "[deploy] ADMIN_API_KEY generada automáticamente en .env"
   fi
 }
@@ -68,6 +131,10 @@ fi
 generate_admin_key_if_needed
 
 APP_PORT="$(read_env_value "APP_PORT" "8000")"
+APP_PORT="$(choose_available_port "$APP_PORT")"
+set_env_value "APP_PORT" "$APP_PORT"
+
+echo "[deploy] Usando APP_PORT=${APP_PORT}"
 
 echo "[deploy] Building and starting containers..."
 docker compose up -d --build

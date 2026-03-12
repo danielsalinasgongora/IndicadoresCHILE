@@ -30,6 +30,7 @@ Esto hace automáticamente:
 - generación automática de `ADMIN_API_KEY` segura (sin depender de python del host),
 - build + `up -d`,
 - validación de salud del servicio.
+- detección de puerto ocupado y solicitud de nuevo puerto antes del despliegue.
 
 Abre: `http://IP_DEL_SERVIDOR:8000` (o puerto definido en `APP_PORT`).
 
@@ -148,6 +149,8 @@ docker compose exec dashboard python scripts/update_data.py
 ```
 
 ## Troubleshooting rápido
+
+- Si ves `port is already allocated`, vuelve a ejecutar `./deployment/deploy.sh` y el script te pedirá otro puerto libre.
 - Verifica salud:
 ```bash
 curl -sS http://127.0.0.1:8000/api/health
