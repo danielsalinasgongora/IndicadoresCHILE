@@ -1,0 +1,48 @@
+body {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  margin: 0;
+  background: #0b1020;
+  color: #f3f4f6;
+}
+main {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 16px 24px;
+}
+h1 { margin-bottom: 8px; }
+.controls, .sum-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+.stat-card {
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  background: #111827;
+  padding: 12px;
+}
+.stat-card strong { font-size: 20px; display: block; margin-top: 6px; }
+label { display: grid; gap: 6px; font-size: 14px; }
+input, select, button {
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: #111827;
+  color: #f3f4f6;
+  padding: 8px 10px;
+}
+button { cursor: pointer; background: #1d4ed8; border: none; }
+.chart-card, .sum-card, article {
+  margin-top: 16px;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  background: #111827;
+  padding: 12px;
+}
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+li { margin-bottom: 8px; }
+pre { white-space: pre-wrap; }
+@media (max-width: 900px) {
+  .grid-2, .stats { grid-template-columns: 1fr; }
+}
