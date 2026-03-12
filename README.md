@@ -15,6 +15,46 @@ Proyecto web para analizar indicadores macroeconómicos de Chile con comparació
 - Endpoint administrativo protegido por API key para forzar refresh.
 - Testing automatizado + CI con GitHub Actions.
 
+## Instalación pública (rápida)
+Requisitos: Docker Engine + Docker Compose plugin.
+
+```bash
+git clone <URL_DE_TU_REPO>
+cd IndicadoresCHILE
+./deployment/install_public.sh
+```
+
+Esto hace automáticamente:
+- pre-check de Docker/Compose,
+- creación de `.env` desde `.env.example`,
+- generación automática de `ADMIN_API_KEY` segura,
+- build + `up -d`,
+- validación de salud del servicio.
+
+Abre: `http://IP_DEL_SERVIDOR:${APP_PORT}` (por defecto 8000).
+
+## Instalación manual con Docker
+```bash
+cp .env.example .env
+# opcional: editar .env
+./deployment/deploy.sh
+```
+
+### Comandos operativos útiles
+```bash
+# levantar/actualizar
+./deployment/deploy.sh
+
+# logs en vivo
+docker compose logs -f dashboard
+
+# estado
+docker compose ps
+
+# detener
+docker compose down
+```
+
 ## Endpoints principales
 - `GET /api/health`
 - `GET /api/indicators`
@@ -26,6 +66,7 @@ Proyecto web para analizar indicadores macroeconómicos de Chile con comparació
 - `GET /api/metadata/last-update`
 - `POST /api/admin/refresh` (header `X-API-Key`)
 
+## Ejecutar local sin Docker
 ## Ejecutar local
 ```bash
 python -m venv .venv
@@ -48,6 +89,12 @@ pytest -q
 ```
 
 ## Seguridad y acceso
+- CORS configurable por `ALLOWED_ORIGINS`.
+- Endpoint admin protegido con `ADMIN_API_KEY`.
+- `deployment/deploy.sh` genera automáticamente una API key segura si detecta valor por defecto.
+- Cabeceras de seguridad HTTP activas (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`).
+- Recomendado para producción:
+  - Reverse proxy con TLS (Nginx/Traefik/Caddy).
 - CORS configurable por `ALLOWED_ORIGINS` (por defecto sólo localhost).
 - Endpoint admin protegido con `ADMIN_API_KEY`.
 - Cabeceras de seguridad HTTP activas (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`).
@@ -57,6 +104,14 @@ pytest -q
   - Rate limiting/WAF en capa de borde.
 
 ## Auto-actualización
+- `RUN_UPDATE_ON_STARTUP=1` hace actualización inicial al iniciar contenedor.
+- Para refresco periódico, mantener cron/job externo que invoque:
+```bash
+docker compose exec dashboard python scripts/update_data.py
+```
+
+## CI/CD
+El workflow `.github/workflows/ci.yml` instala dependencias y ejecuta pruebas en cada push/PR.
 - Programar cron diario para refrescar series:
 ```bash
 0 6 * * * cd /ruta/IndicadoresCHILE && /ruta/.venv/bin/python scripts/update_data.py
