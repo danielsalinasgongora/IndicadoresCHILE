@@ -1,0 +1,30 @@
+{
+  "events": [
+    {"year": 2008, "title": "Crisis financiera global", "description": "Shock de liquidez y caída del comercio internacional.", "scope": "global"},
+    {"year": 2010, "title": "Terremoto 27F en Chile", "description": "Impacto en actividad y reconstrucción.", "scope": "local"},
+    {"year": 2019, "title": "Estallido social", "description": "Alta incertidumbre y volatilidad local.", "scope": "local"},
+    {"year": 2020, "title": "Pandemia COVID-19", "description": "Fuerte caída de actividad y estímulos fiscales/monetarios.", "scope": "global"},
+    {"year": 2021, "title": "Retiros de fondos previsionales", "description": "Impulso a consumo con presión inflacionaria posterior.", "scope": "policy"},
+    {"year": 2022, "title": "Inflación global y alza de tasas", "description": "Endurecimiento monetario internacional.", "scope": "global"}
+  ],
+  "governments": [
+    {"president": "Ricardo Lagos", "start_year": 2000, "end_year": 2006},
+    {"president": "Michelle Bachelet I", "start_year": 2006, "end_year": 2010},
+    {"president": "Sebastián Piñera I", "start_year": 2010, "end_year": 2014},
+    {"president": "Michelle Bachelet II", "start_year": 2014, "end_year": 2018},
+    {"president": "Sebastián Piñera II", "start_year": 2018, "end_year": 2022},
+    {"president": "Gabriel Boric", "start_year": 2022, "end_year": 2030}
+  ],
+  "risk_country": [
+    {"year": 2015, "spread_bps": 170},
+    {"year": 2016, "spread_bps": 165},
+    {"year": 2017, "spread_bps": 150},
+    {"year": 2018, "spread_bps": 160},
+    {"year": 2019, "spread_bps": 190},
+    {"year": 2020, "spread_bps": 230},
+    {"year": 2021, "spread_bps": 210},
+    {"year": 2022, "spread_bps": 240},
+    {"year": 2023, "spread_bps": 200},
+    {"year": 2024, "spread_bps": 180}
+  ]
+}
