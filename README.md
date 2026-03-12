@@ -55,6 +55,16 @@ docker compose ps
 docker compose down
 ```
 
+
+## Resolver conflictos de merge (rápido)
+Si tu PR marca conflictos con `main`, puedes usar:
+
+```bash
+./deployment/resolve_merge_conflicts.sh main
+```
+
+El script hace `fetch + rebase` y te deja instrucciones para continuar en caso de conflicto.
+
 ## Endpoints principales
 - `GET /api/health`
 - `GET /api/indicators`
